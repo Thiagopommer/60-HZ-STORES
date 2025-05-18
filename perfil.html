@@ -18,13 +18,28 @@
       width: 120px;
       height: 120px;
     }
-    input {
+    input, button {
       margin: 10px auto;
       display: block;
-      padding: 8px;
+      padding: 10px;
       border-radius: 5px;
       border: none;
       width: 250px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #00f0ff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #00c8dd;
+    }
+    #mensagem {
+      margin-top: 10px;
+      font-weight: bold;
     }
     ul {
       list-style: none;
@@ -69,9 +84,12 @@
           <img src="${avatar}" alt="Avatar do Usuário">
           <h2>${user.global_name || user.username}</h2>
 
-          <input type="email" placeholder="Seu e-mail (opcional)">
+          <input type="text" id="gmail" placeholder="Gmail">
+          <button onclick="validarGmail()">ADICIONAR GMAIL</button>
+          <div id="mensagem"></div>
+
           <input type="tel" placeholder="Seu número (opcional)">
-          
+
           <p><strong>Cargo:</strong> ${cargo}</p>
           ${permissoesHtml}
         `;
@@ -79,6 +97,20 @@
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
       });
+    }
+
+    function validarGmail() {
+      const email = document.getElementById("gmail").value.trim();
+      const msg = document.getElementById("mensagem");
+      const regex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+      if (!regex.test(email)) {
+        msg.style.color = "red";
+        msg.textContent = "GMAIL NÃO EXISTE";
+      } else {
+        msg.style.color = "lightgreen";
+        msg.textContent = "GMAIL ADICIONADO";
+      }
     }
   </script>
 </body>
