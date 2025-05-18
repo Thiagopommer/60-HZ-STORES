@@ -37,7 +37,7 @@
     button:hover {
       background-color: #00c8dd;
     }
-    #mensagem {
+    #mensagem-gmail, #mensagem-numero {
       margin-top: 10px;
       font-weight: bold;
     }
@@ -54,8 +54,7 @@
   <script>
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
-    let gmailDiscord = "";
-    let userId = "";
+    let userId = "", gmailDiscord = "", numeroDiscord = ""; // numero ainda é falso (simulado)
 
     if (!token) {
       document.body.innerHTML = "<h2>Você não está logado!</h2>";
@@ -69,23 +68,27 @@
         const nome = user.global_name || user.username;
         const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
         gmailDiscord = user.email || "";
+        numeroDiscord = user.phone || ""; // só funciona se a permissão 'phone' estiver ativada
         userId = user.id;
 
-        // Carregar dados salvos do localStorage
         const dadosSalvos = JSON.parse(localStorage.getItem("perfil_" + userId)) || {};
         const gmailSalvo = dadosSalvos.gmail || "";
-        const telefoneSalvo = dadosSalvos.telefone || "";
+        const numeroSalvo = dadosSalvos.numero || "";
+
+        const gmailIgual = gmailDiscord && gmailSalvo.toLowerCase() === gmailDiscord.toLowerCase();
+        const numeroIgual = numeroDiscord && numeroSalvo === numeroDiscord;
 
         document.getElementById("perfil-container").innerHTML = `
           <img src="${avatar}" alt="Avatar do Usuário">
           <h2>${nome}</h2>
 
           <input type="text" id="gmail" placeholder="Gmail" value="${gmailSalvo}">
-          <button onclick="validarGmail()">ADICIONAR GMAIL</button>
-          <div id="mensagem"></div>
+          ${!gmailIgual ? `<button id="btn-gmail" onclick="validarGmail()">ADICIONAR GMAIL</button>` : ""}
+          <div id="mensagem-gmail"></div>
 
-          <input type="tel" id="telefone" placeholder="Seu número (opcional)" value="${telefoneSalvo}">
-          <button onclick="salvarTelefone()">SALVAR NÚMERO</button>
+          <input type="tel" id="numero" placeholder="Seu número" value="${numeroSalvo}">
+          ${!numeroIgual ? `<button id="btn-numero" onclick="validarNumero()">ADICIONAR NÚMERO</button>` : ""}
+          <div id="mensagem-numero"></div>
 
           <p><strong>Cargo:</strong> ${cargo}</p>
 
@@ -101,6 +104,23 @@
               <li>🔒 Acesso apenas ao seu perfil</li>
             </ul>`}
         `;
+
+        // Se dados já válidos, mostra mensagem confirmando
+        if (gmailIgual) {
+          document.getElementById("mensagem-gmail").style.color = "lightgreen";
+          document.getElementById("mensagem-gmail").textContent = "GMAIL ADICIONADO";
+        } else if (!gmailDiscord) {
+          document.getElementById("mensagem-gmail").style.color = "orange";
+          document.getElementById("mensagem-gmail").textContent = "Você precisa adicionar um Gmail no Discord.";
+        }
+
+        if (numeroIgual) {
+          document.getElementById("mensagem-numero").style.color = "deepskyblue";
+          document.getElementById("mensagem-numero").textContent = "NÚMERO ADICIONADO";
+        } else if (!numeroDiscord) {
+          document.getElementById("mensagem-numero").style.color = "orange";
+          document.getElementById("mensagem-numero").textContent = "Você precisa adicionar um número no Discord.";
+        }
       })
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
@@ -109,26 +129,47 @@
 
     function validarGmail() {
       const emailDigitado = document.getElementById("gmail").value.trim();
-      const msg = document.getElementById("mensagem");
+      const msg = document.getElementById("mensagem-gmail");
+
+      if (!gmailDiscord) {
+        msg.style.color = "orange";
+        msg.textContent = "Você precisa adicionar um Gmail no Discord.";
+        return;
+      }
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
         msg.style.color = "lightgreen";
         msg.textContent = "GMAIL ADICIONADO";
-
-        salvarDados("gmail", emailDigitado);
+        salvarDado("gmail", emailDigitado);
+        document.getElementById("btn-gmail").remove();
       } else {
         msg.style.color = "red";
         msg.textContent = "GMAIL INVÁLIDO";
       }
     }
 
-    function salvarTelefone() {
-      const telefone = document.getElementById("telefone").value.trim();
-      salvarDados("telefone", telefone);
-      alert("Número salvo!");
+    function validarNumero() {
+      const numeroDigitado = document.getElementById("numero").value.trim();
+      const msg = document.getElementById("mensagem-numero");
+
+      if (!numeroDiscord) {
+        msg.style.color = "orange";
+        msg.textContent = "Você precisa adicionar um número no Discord.";
+        return;
+      }
+
+      if (numeroDigitado === numeroDiscord) {
+        msg.style.color = "deepskyblue";
+        msg.textContent = "NÚMERO ADICIONADO";
+        salvarDado("numero", numeroDigitado);
+        document.getElementById("btn-numero").remove();
+      } else {
+        msg.style.color = "red";
+        msg.textContent = "NÚMERO INVÁLIDO";
+      }
     }
 
-    function salvarDados(tipo, valor) {
+    function salvarDado(tipo, valor) {
       const chave = "perfil_" + userId;
       const dadosAtuais = JSON.parse(localStorage.getItem(chave)) || {};
       dadosAtuais[tipo] = valor;
