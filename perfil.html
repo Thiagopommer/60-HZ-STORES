@@ -62,11 +62,10 @@
       transform: scale(1.05);
     }
 
-    .mensagem {
+    #mensagem-gmail, #mensagem-numero {
       margin-top: 6px;
       font-weight: bold;
       transition: color 0.3s ease;
-      min-height: 20px;
     }
 
     ul {
@@ -86,9 +85,23 @@
       padding: 15px;
       box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
     }
+
+    .voltar {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      color: white;
+      text-decoration: none;
+      background-color: rgba(0,0,0,0.5);
+      padding: 8px 14px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px cyan;
+    }
   </style>
 </head>
 <body>
+  <a href="pagina2.html" class="voltar">X</a>
   <h1>SEU PERFIL</h1>
   <div id="perfil-container"></div>
 
@@ -109,7 +122,7 @@
         const nome = user.global_name || user.username;
         const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
         gmailDiscord = user.email || "";
-        numeroDiscord = user.phone || ""; // Requer permissão 'phone'
+        numeroDiscord = user.phone || "";
         userId = user.id;
 
         const dadosSalvos = JSON.parse(localStorage.getItem("perfil_" + userId)) || {};
@@ -125,11 +138,11 @@
 
           <input type="text" id="gmail" placeholder="Gmail" value="${gmailSalvo}">
           ${!gmailIgual ? `<button id="btn-gmail" onclick="validarGmail()">ADICIONAR GMAIL</button>` : ""}
-          <div id="mensagem-gmail" class="mensagem"></div>
+          <div id="mensagem-gmail"></div>
 
           <input type="tel" id="numero" placeholder="Seu número" value="${numeroSalvo}">
           ${!numeroIgual ? `<button id="btn-numero" onclick="validarNumero()">ADICIONAR NÚMERO</button>` : ""}
-          <div id="mensagem-numero" class="mensagem"></div>
+          <div id="mensagem-numero"></div>
 
           <p><strong>Cargo:</strong> ${cargo}</p>
 
@@ -147,6 +160,18 @@
             </ul>`}
           </div>
         `;
+
+        if (gmailIgual) {
+          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
+        } else if (!gmailDiscord) {
+          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+        }
+
+        if (numeroIgual) {
+          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
+        } else if (!numeroDiscord) {
+          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+        }
       })
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
@@ -158,16 +183,16 @@
       const msg = document.getElementById("mensagem-gmail");
 
       if (!gmailDiscord) {
-        exibirMensagem(msg, "Você precisa adicionar um Gmail no Discord.", "orange");
+        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
         return;
       }
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
-        exibirMensagem(msg, "GMAIL ADICIONADO", "lightgreen");
+        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
         salvarDado("gmail", emailDigitado);
         document.getElementById("btn-gmail").remove();
       } else {
-        exibirMensagem(msg, "GMAIL INVÁLIDO", "red");
+        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red");
       }
     }
 
@@ -176,27 +201,23 @@
       const msg = document.getElementById("mensagem-numero");
 
       if (!numeroDiscord) {
-        exibirMensagem(msg, "Você precisa adicionar um número no Discord.", "orange");
+        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
         return;
       }
 
       if (numeroDigitado === numeroDiscord) {
-        exibirMensagem(msg, "NÚMERO ADICIONADO", "deepskyblue");
+        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
         salvarDado("numero", numeroDigitado);
         document.getElementById("btn-numero").remove();
       } else {
-        exibirMensagem(msg, "NÚMERO INVÁLIDO", "red");
+        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red");
       }
     }
 
-    function exibirMensagem(elemento, texto, cor) {
-      elemento.textContent = texto;
-      elemento.style.color = cor;
-      setTimeout(() => {
-        if (texto.includes("adicionar")) {
-          elemento.textContent = "";
-        }
-      }, 3000);
+    function mostrarMensagem(id, texto, cor) {
+      const el = document.getElementById(id);
+      el.textContent = texto;
+      el.style.color = cor;
     }
 
     function salvarDado(tipo, valor) {
