@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página 2</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    .background {
+      background: url('fundo.webp') no-repeat center center/cover;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .user-box {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .user-box img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .user-box p {
+      margin-top: 5px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .content {
+      z-index: 1;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <div class="content">
+      <h1>Bem-vindo!</h1>
+    </div>
+    <div class="user-box" id="user-box" style="display: none;">
+      <a href="perfil.html"><img id="user-avatar" alt="Avatar" /></a>
+      <p id="user-name"></p>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = urlParams.get('access_token');
+    if (accessToken) {
+      localStorage.setItem("discord_token", accessToken);
+    }
+
+    const token = localStorage.getItem("discord_token");
+
+    if (token) {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
+        const name = data.global_name || data.username;
+
+        document.getElementById("user-avatar").src = avatarUrl;
+        document.getElementById("user-name").textContent = name;
+        document.getElementById("user-box").style.display = "block";
+      })
+      .catch(error => {
+        console.error("Erro ao obter usuário:", error);
+      });
+    }
+  </script>
+</body>
+</html>
 
