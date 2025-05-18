@@ -1,12 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Seu Perfil</title>
+  <title>SEU PERFIL</title>
   <style>
     body {
-      background-color: #111;
+      background: url('fundo.webp') no-repeat center center fixed;
+      background-size: cover;
       color: white;
       text-align: center;
       font-family: Arial, sans-serif;
@@ -15,6 +15,16 @@
     img {
       border-radius: 50%;
       margin-top: 20px;
+      width: 120px;
+      height: 120px;
+    }
+    input {
+      margin: 10px auto;
+      display: block;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      width: 250px;
     }
     ul {
       list-style: none;
@@ -23,7 +33,7 @@
   </style>
 </head>
 <body>
-  <h1>Perfil Privado</h1>
+  <h1>SEU PERFIL</h1>
   <div id="perfil-container"></div>
 
   <script>
@@ -43,29 +53,25 @@
         const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
         const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
 
-        let permissoesHtml = "";
-        if (cargo === "CEO") {
-          permissoesHtml = `
-            <h3>Permissões do CEO</h3>
-            <ul>
-              <li>✅ Acesso total</li>
-              <li>✅ Gerenciar cargos</li>
-              <li>✅ Ver todos os perfis</li>
-            </ul>
-          `;
-        } else {
-          permissoesHtml = `
-            <h3>Permissões de Cliente</h3>
-            <ul>
-              <li>🔒 Acesso apenas ao seu perfil</li>
-            </ul>
-          `;
-        }
+        let permissoesHtml = cargo === "CEO" ? `
+          <h3>Permissões do CEO</h3>
+          <ul>
+            <li>✅ Acesso total</li>
+            <li>✅ Gerenciar cargos</li>
+            <li>✅ Ver todos os perfis</li>
+          </ul>` : `
+          <h3>Permissões de Cliente</h3>
+          <ul>
+            <li>🔒 Acesso apenas ao seu perfil</li>
+          </ul>`;
 
         document.getElementById("perfil-container").innerHTML = `
-          <img src="${avatar}" width="120"><br>
+          <img src="${avatar}" alt="Avatar do Usuário">
           <h2>${user.global_name || user.username}</h2>
-          <p><strong>ID:</strong> ${user.id}</p>
+
+          <input type="email" placeholder="Seu e-mail (opcional)">
+          <input type="tel" placeholder="Seu número (opcional)">
+          
           <p><strong>Cargo:</strong> ${cargo}</p>
           ${permissoesHtml}
         `;
