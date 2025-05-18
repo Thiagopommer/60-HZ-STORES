@@ -70,6 +70,7 @@
       right: 30px;
       display: flex;
       gap: 10px;
+      align-items: center;
     }
 
     .topbar a {
@@ -89,14 +90,74 @@
       background-color: black;
       color: white;
     }
+
+    .avatar-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .profile-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      color: white;
+      text-align: center;
+      width: 300px;
+      z-index: 1001;
+      display: none;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+    }
+
+    .panel-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      display: none;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .panel-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin-bottom: 15px;
+    }
+
+    #user-profile {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="background">
     <div class="topbar">
-      <a href="https://discord.com/oauth2/authorize?client_id=1372686492052226049&redirect_uri=https://thiagopommer.github.io/60-hz-stores/pagina2.html&response_type=token&scope=identify" class="login">Fazer login</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1372686492052226049&redirect_uri=https://thiagopommer.github.io/60-hz-stores/pagina2.html&response_type=token&scope=identify%20email" class="login">Fazer login</a>
+      <div id="user-profile">
+        <img id="user-avatar" class="avatar-small" />
+      </div>
       <a href="#" class="cart">🛒 Carrinho</a>
     </div>
+
     <div class="content">
       <h1>A <span class="highlight">Melhor</span> Loja de<br>Modelagens e resources do mta</h1>
       <p>A 60Hz Stores é reconhecida como líder do mercado, oferecendo<br>seleção imbatível de produtos digitais com os melhores preços</p>
@@ -106,5 +167,66 @@
       </div>
     </div>
   </div>
+
+  <!-- Painel do perfil -->
+  <div id="profile-panel" class="profile-panel">
+    <button class="close-btn" onclick="closeProfilePanel()">×</button>
+    <img id="panel-avatar" class="panel-avatar" />
+    <h2 id="panel-display-name"></h2>
+    <p id="panel-username"></p>
+    <div id="panel-extra-info"></div>
+  </div>
+  <div id="panel-overlay" class="panel-overlay" onclick="closeProfilePanel()"></div>
+
+  <script>
+    // Armazena token se vier na URL
+    const urlHash = window.location.hash;
+    if (urlHash.includes("access_token")) {
+      const params = new URLSearchParams(urlHash.substring(1));
+      const token = params.get("access_token");
+      localStorage.setItem("discord_token", token);
+      window.location.hash = "";
+    }
+
+    const token = localStorage.getItem("discord_token");
+    if (token) {
+      fetch("https://discord.com/api/v10/users/@me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
+        document.getElementById("user-avatar").src = avatarUrl;
+        document.getElementById("user-profile").style.display = "block";
+        document.querySelector(".login").style.display = "none";
+
+        // Clicar no avatar mostra o painel
+        document.getElementById("user-avatar").addEventListener("click", () => {
+          document.getElementById("panel-avatar").src = avatarUrl;
+          document.getElementById("panel-display-name").textContent = data.global_name || data.username;
+          document.getElementById("panel-username").textContent = "@" + data.username;
+
+          const email = data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : `<p><strong>Email:</strong> Não disponível</p>`;
+          const phone = `<p><strong>Telefone:</strong> Não adicionado</p>`; // Fixo porque não vem pela API
+
+          document.getElementById("panel-extra-info").innerHTML = email + phone + `<br><br><a href="perfil.html" style="color: #00f;">Acessar Perfil Privado</a>`;
+
+          document.getElementById("profile-panel").style.display = "block";
+          document.getElementById("panel-overlay").style.display = "block";
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao buscar usuário:", error);
+      });
+    }
+
+    function closeProfilePanel() {
+      document.getElementById("profile-panel").style.display = "none";
+      document.getElementById("panel-overlay").style.display = "none";
+    }
+  </script>
 </body>
 </html>
