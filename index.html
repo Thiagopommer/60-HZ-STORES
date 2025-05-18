@@ -159,7 +159,7 @@
     </div>
 
     <div class="content">
-      <h1>A <span class="highlight">Melhor</span> Loja de<br>Modelagens e resources do mta</h1>
+      <h1>A <span class="highlight">Melhor</span> Loja de<br>Modelagens e resources do MTA</h1>
       <p>A 60Hz Stores é reconhecida como líder do mercado, oferecendo<br>seleção imbatível de produtos digitais com os melhores preços</p>
       <div class="buttons">
         <a href="#" class="btn-blue">Ver produtos</a>
@@ -184,11 +184,12 @@
     if (urlHash.includes("access_token")) {
       const params = new URLSearchParams(urlHash.substring(1));
       const token = params.get("access_token");
-      localStorage.setItem("discord_token", token);
+      sessionStorage.setItem("discord_token", token);
+      localStorage.removeItem("discord_token"); // Remove token antigo, se existir
       window.location.hash = "";
     }
 
-    const token = localStorage.getItem("discord_token");
+    const token = sessionStorage.getItem("discord_token");
     if (token) {
       fetch("https://discord.com/api/v10/users/@me", {
         method: "GET",
