@@ -65,9 +65,28 @@
       font-size: 2rem;
       font-weight: bold;
     }
+
+    #menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 3;
+    }
+
+    #menu-toggle button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <div id="menu-toggle">
+    <button onclick="abrirSuporte()">&#9776;</button>
+  </div>
+
   <div class="background">
     <div class="content">
       <h1>Bem-vindo!</h1>
@@ -79,6 +98,10 @@
   </div>
 
   <script>
+    function abrirSuporte() {
+      alert("ABRIR SUPORTE");
+    }
+
     const urlParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = urlParams.get('access_token');
     if (accessToken) {
@@ -109,4 +132,3 @@
   </script>
 </body>
 </html>
-
