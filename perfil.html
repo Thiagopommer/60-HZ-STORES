@@ -62,10 +62,11 @@
       transform: scale(1.05);
     }
 
-    #mensagem-gmail, #mensagem-numero {
+    .mensagem {
       margin-top: 6px;
       font-weight: bold;
       transition: color 0.3s ease;
+      min-height: 20px;
     }
 
     ul {
@@ -108,7 +109,7 @@
         const nome = user.global_name || user.username;
         const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
         gmailDiscord = user.email || "";
-        numeroDiscord = user.phone || "";
+        numeroDiscord = user.phone || ""; // Requer permissão 'phone'
         userId = user.id;
 
         const dadosSalvos = JSON.parse(localStorage.getItem("perfil_" + userId)) || {};
@@ -124,11 +125,11 @@
 
           <input type="text" id="gmail" placeholder="Gmail" value="${gmailSalvo}">
           ${!gmailIgual ? `<button id="btn-gmail" onclick="validarGmail()">ADICIONAR GMAIL</button>` : ""}
-          <div id="mensagem-gmail"></div>
+          <div id="mensagem-gmail" class="mensagem"></div>
 
           <input type="tel" id="numero" placeholder="Seu número" value="${numeroSalvo}">
           ${!numeroIgual ? `<button id="btn-numero" onclick="validarNumero()">ADICIONAR NÚMERO</button>` : ""}
-          <div id="mensagem-numero"></div>
+          <div id="mensagem-numero" class="mensagem"></div>
 
           <p><strong>Cargo:</strong> ${cargo}</p>
 
@@ -146,18 +147,6 @@
             </ul>`}
           </div>
         `;
-
-        if (gmailIgual) {
-          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
-        } else if (!gmailDiscord) {
-          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
-        }
-
-        if (numeroIgual) {
-          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
-        } else if (!numeroDiscord) {
-          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
-        }
       })
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
@@ -169,16 +158,16 @@
       const msg = document.getElementById("mensagem-gmail");
 
       if (!gmailDiscord) {
-        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+        exibirMensagem(msg, "Você precisa adicionar um Gmail no Discord.", "orange");
         return;
       }
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
-        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
+        exibirMensagem(msg, "GMAIL ADICIONADO", "lightgreen");
         salvarDado("gmail", emailDigitado);
         document.getElementById("btn-gmail").remove();
       } else {
-        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red");
+        exibirMensagem(msg, "GMAIL INVÁLIDO", "red");
       }
     }
 
@@ -187,23 +176,27 @@
       const msg = document.getElementById("mensagem-numero");
 
       if (!numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+        exibirMensagem(msg, "Você precisa adicionar um número no Discord.", "orange");
         return;
       }
 
       if (numeroDigitado === numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
+        exibirMensagem(msg, "NÚMERO ADICIONADO", "deepskyblue");
         salvarDado("numero", numeroDigitado);
         document.getElementById("btn-numero").remove();
       } else {
-        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red");
+        exibirMensagem(msg, "NÚMERO INVÁLIDO", "red");
       }
     }
 
-    function mostrarMensagem(id, texto, cor) {
-      const el = document.getElementById(id);
-      el.textContent = texto;
-      el.style.color = cor;
+    function exibirMensagem(elemento, texto, cor) {
+      elemento.textContent = texto;
+      elemento.style.color = cor;
+      setTimeout(() => {
+        if (texto.includes("adicionar")) {
+          elemento.textContent = "";
+        }
+      }, 3000);
     }
 
     function salvarDado(tipo, valor) {
