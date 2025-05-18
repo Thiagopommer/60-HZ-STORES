@@ -161,16 +161,16 @@
           </div>
         `;
 
-        if (gmailIgual) {
-          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
-        } else if (!gmailDiscord) {
-          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+        if (!gmailDiscord) {
+          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", false);
+        } else if (gmailIgual) {
+          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
         }
 
-        if (numeroIgual) {
-          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
-        } else if (!numeroDiscord) {
-          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+        if (!numeroDiscord) {
+          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", false);
+        } else if (numeroIgual) {
+          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
         }
       })
       .catch(() => {
@@ -180,44 +180,48 @@
 
     function validarGmail() {
       const emailDigitado = document.getElementById("gmail").value.trim();
-      const msg = document.getElementById("mensagem-gmail");
 
       if (!gmailDiscord) {
-        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", false);
         return;
       }
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
-        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
+        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
         salvarDado("gmail", emailDigitado);
         document.getElementById("btn-gmail").remove();
       } else {
-        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red");
+        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red", true);
       }
     }
 
     function validarNumero() {
       const numeroDigitado = document.getElementById("numero").value.trim();
-      const msg = document.getElementById("mensagem-numero");
 
       if (!numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", false);
         return;
       }
 
       if (numeroDigitado === numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
+        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
         salvarDado("numero", numeroDigitado);
         document.getElementById("btn-numero").remove();
       } else {
-        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red");
+        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red", true);
       }
     }
 
-    function mostrarMensagem(id, texto, cor) {
+    function mostrarMensagem(id, texto, cor, temporaria = false) {
       const el = document.getElementById(id);
       el.textContent = texto;
       el.style.color = cor;
+
+      if (temporaria) {
+        setTimeout(() => {
+          el.textContent = "";
+        }, 3000);
+      }
     }
 
     function salvarDado(tipo, valor) {
