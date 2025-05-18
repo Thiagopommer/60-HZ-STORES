@@ -27,6 +27,12 @@
       text-align: center;
     }
 
+    .content {
+      z-index: 1;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
     body::before {
       content: "";
       position: absolute;
@@ -38,75 +44,22 @@
       z-index: 0;
     }
 
-    .avatar-container {
-      position: absolute;
-      top: 20px;
-      right: 20px; /* Ajustado para mais à direita */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      z-index: 1;
-    }
-
-    /* Estilo da foto de perfil */
     .avatar {
       border-radius: 50%;
-      width: 70px;
-      height: 70px;
-      border: 4px solid #fff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-      transition: transform 0.3s ease-in-out;
-      display: block; /* Garantir que esteja visível */
-    }
-
-    .avatar:hover {
-      transform: scale(1.1);
-    }
-
-    .user-name {
-      margin-top: 10px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    }
-
-    /* Estilo para o "Carregando..." */
-    .loading-spinner {
-      border: 4px solid transparent;
-      border-top: 4px solid #fff;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      margin-top: 5px;
-    }
-
-    /* Animação do spinner */
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .main-content {
-      margin-top: 80px;
+      margin-top: 20px;
+      width: 150px;
+      height: 150px;
     }
   </style>
 </head>
 <body>
   <div class="background">
-    <div class="avatar-container">
-      <!-- Foto de perfil -->
-      <img id="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="avatar" style="display: none;" />
-      <div id="user-name" class="user-name">
-        Carregando...
-        <div id="spinner" class="loading-spinner"></div>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <h1>A <span class="highlight">Melhor</span> Loja de<br>Modelagens e resources do mta</h1>
-      <p>A 60Hz Stores é reconhecida como líder do mercado, oferecendo<br>seleção imbatível de produtos digitais com os melhores preços</p>
+    <div class="content">
+      <h1>Bem-vindo!</h1>
+      <div id="user-info"></div>
+      <div id="avatar-container"></div>
+      <!-- Exibir o token na página para depuração -->
+      <div id="debug-token"></div>
     </div>
   </div>
 
@@ -114,6 +67,15 @@
     // Captura o token da URL
     const urlParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = urlParams.get('access_token');
+    const tokenType = urlParams.get('token_type');
+
+    // Exibe o token para depuração
+    if (accessToken) {
+      document.getElementById('debug-token').innerHTML = `<p>Token de acesso: ${accessToken}</p>`;
+      console.log("Token de acesso:", accessToken); // Log no console
+    } else {
+      document.getElementById('debug-token').innerHTML = "<p>Token de acesso não encontrado!</p>";
+    }
 
     if (accessToken) {
         // Realiza a requisição à API do Discord
@@ -125,27 +87,22 @@
         })
         .then(response => response.json())
         .then(data => {
+            console.log("Dados do Discord:", data); // Verificando os dados recebidos
             if (data && data.id) {
                 const userName = data.username + "#" + data.discriminator;
                 const avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
 
-                // Esconde o spinner e mostra o avatar
-                document.getElementById('spinner').style.display = 'none';
-                document.getElementById('avatar').src = avatarUrl;
-                document.getElementById('avatar').style.display = 'block';
-
-                // Atualiza o nome do usuário
-                document.getElementById('user-name').innerText = userName;
+                // Exibe o nome de usuário e avatar
+                document.getElementById('user-info').innerHTML = `<p>Usuário: ${userName}</p>`;
+                document.getElementById('avatar-container').innerHTML = `<a href="perfil.html"><img src="${avatarUrl}" alt="Avatar" class="avatar" style="cursor:pointer;" /></a>`;
             } else {
-                document.getElementById('user-name').innerText = "Erro ao carregar nome";
+                document.getElementById('user-info').innerHTML = "<p>Falha ao obter os dados do usuário.</p>";
             }
         })
         .catch(error => {
-            document.getElementById('user-name').innerText = "Erro ao carregar nome";
             console.error('Erro ao obter dados do Discord:', error);
+            document.getElementById('user-info').innerHTML = "<p>Erro ao carregar informações do Discord.</p>";
         });
-    } else {
-        document.getElementById('user-name').innerText = "Token não encontrado";
     }
   </script>
 </body>
