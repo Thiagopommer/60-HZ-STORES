@@ -27,12 +27,6 @@
       text-align: center;
     }
 
-    .content {
-      z-index: 1;
-      font-size: 2rem;
-      font-weight: bold;
-    }
-
     body::before {
       content: "";
       position: absolute;
@@ -44,11 +38,32 @@
       z-index: 0;
     }
 
-    .avatar {
+    .user-box {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .user-box img {
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      margin-top: 20px;
-      width: 150px;
-      height: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .user-box p {
+      margin-top: 5px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .content {
+      z-index: 1;
+      font-size: 2rem;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -56,53 +71,40 @@
   <div class="background">
     <div class="content">
       <h1>Bem-vindo!</h1>
-      <div id="user-info"></div>
-      <div id="avatar-container"></div>
-      <!-- Exibir o token na página para depuração -->
-      <div id="debug-token"></div>
+    </div>
+    <div class="user-box" id="user-box" style="display: none;">
+      <a href="perfil.html"><img id="user-avatar" alt="Avatar" /></a>
+      <p id="user-name"></p>
     </div>
   </div>
 
   <script>
-    // Captura o token da URL
     const urlParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = urlParams.get('access_token');
-    const tokenType = urlParams.get('token_type');
-
-    // Exibe o token para depuração
     if (accessToken) {
-      document.getElementById('debug-token').innerHTML = `<p>Token de acesso: ${accessToken}</p>`;
-      console.log("Token de acesso:", accessToken); // Log no console
-    } else {
-      document.getElementById('debug-token').innerHTML = "<p>Token de acesso não encontrado!</p>";
+      localStorage.setItem("discord_token", accessToken);
     }
 
-    if (accessToken) {
-        // Realiza a requisição à API do Discord
-        fetch('https://discord.com/api/v10/users/@me', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Dados do Discord:", data); // Verificando os dados recebidos
-            if (data && data.id) {
-                const userName = data.username + "#" + data.discriminator;
-                const avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
+    const token = localStorage.getItem("discord_token");
 
-                // Exibe o nome de usuário e avatar
-                document.getElementById('user-info').innerHTML = `<p>Usuário: ${userName}</p>`;
-                document.getElementById('avatar-container').innerHTML = `<a href="perfil.html"><img src="${avatarUrl}" alt="Avatar" class="avatar" style="cursor:pointer;" /></a>`;
-            } else {
-                document.getElementById('user-info').innerHTML = "<p>Falha ao obter os dados do usuário.</p>";
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao obter dados do Discord:', error);
-            document.getElementById('user-info').innerHTML = "<p>Erro ao carregar informações do Discord.</p>";
-        });
+    if (token) {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
+        const name = data.global_name || data.username;
+
+        document.getElementById("user-avatar").src = avatarUrl;
+        document.getElementById("user-name").textContent = name;
+        document.getElementById("user-box").style.display = "block";
+      })
+      .catch(error => {
+        console.error("Erro ao obter usuário:", error);
+      });
     }
   </script>
 </body>
