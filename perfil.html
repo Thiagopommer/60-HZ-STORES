@@ -54,44 +54,52 @@
   <script>
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
+    let gmailDiscord = "";
+    let userId = "";
 
     if (!token) {
       document.body.innerHTML = "<h2>Você não está logado!</h2>";
     } else {
       fetch("https://discord.com/api/v10/users/@me", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())
       .then(user => {
         const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+        const nome = user.global_name || user.username;
         const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
+        gmailDiscord = user.email || "";
+        userId = user.id;
 
-        let permissoesHtml = cargo === "CEO" ? `
-          <h3>Permissões do CEO</h3>
-          <ul>
-            <li>✅ Acesso total</li>
-            <li>✅ Gerenciar cargos</li>
-            <li>✅ Ver todos os perfis</li>
-          </ul>` : `
-          <h3>Permissões de Cliente</h3>
-          <ul>
-            <li>🔒 Acesso apenas ao seu perfil</li>
-          </ul>`;
+        // Carregar dados salvos do localStorage
+        const dadosSalvos = JSON.parse(localStorage.getItem("perfil_" + userId)) || {};
+        const gmailSalvo = dadosSalvos.gmail || "";
+        const telefoneSalvo = dadosSalvos.telefone || "";
 
         document.getElementById("perfil-container").innerHTML = `
           <img src="${avatar}" alt="Avatar do Usuário">
-          <h2>${user.global_name || user.username}</h2>
+          <h2>${nome}</h2>
 
-          <input type="text" id="gmail" placeholder="Gmail">
+          <input type="text" id="gmail" placeholder="Gmail" value="${gmailSalvo}">
           <button onclick="validarGmail()">ADICIONAR GMAIL</button>
           <div id="mensagem"></div>
 
-          <input type="tel" placeholder="Seu número (opcional)">
+          <input type="tel" id="telefone" placeholder="Seu número (opcional)" value="${telefoneSalvo}">
+          <button onclick="salvarTelefone()">SALVAR NÚMERO</button>
 
           <p><strong>Cargo:</strong> ${cargo}</p>
-          ${permissoesHtml}
+
+          ${cargo === "CEO" ? `
+            <h3>Permissões do CEO</h3>
+            <ul>
+              <li>✅ Acesso total</li>
+              <li>✅ Gerenciar cargos</li>
+              <li>✅ Ver todos os perfis</li>
+            </ul>` : `
+            <h3>Permissões de Cliente</h3>
+            <ul>
+              <li>🔒 Acesso apenas ao seu perfil</li>
+            </ul>`}
         `;
       })
       .catch(() => {
@@ -100,17 +108,31 @@
     }
 
     function validarGmail() {
-      const email = document.getElementById("gmail").value.trim();
+      const emailDigitado = document.getElementById("gmail").value.trim();
       const msg = document.getElementById("mensagem");
-      const regex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
 
-      if (!regex.test(email)) {
-        msg.style.color = "red";
-        msg.textContent = "GMAIL NÃO EXISTE";
-      } else {
+      if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
         msg.style.color = "lightgreen";
         msg.textContent = "GMAIL ADICIONADO";
+
+        salvarDados("gmail", emailDigitado);
+      } else {
+        msg.style.color = "red";
+        msg.textContent = "GMAIL INVÁLIDO";
       }
+    }
+
+    function salvarTelefone() {
+      const telefone = document.getElementById("telefone").value.trim();
+      salvarDados("telefone", telefone);
+      alert("Número salvo!");
+    }
+
+    function salvarDados(tipo, valor) {
+      const chave = "perfil_" + userId;
+      const dadosAtuais = JSON.parse(localStorage.getItem(chave)) || {};
+      dadosAtuais[tipo] = valor;
+      localStorage.setItem(chave, JSON.stringify(dadosAtuais));
     }
   </script>
 </body>
