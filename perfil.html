@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Seu Perfil</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 50px;
+    }
+    img {
+      border-radius: 50%;
+      margin-top: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Perfil Privado</h1>
+  <div id="perfil-container"></div>
+
+  <script>
+    const token = localStorage.getItem("discord_token");
+    const CEO_ID = "1358576424180518992";
+
+    if (!token) {
+      document.body.innerHTML = "<h2>Você não está logado!</h2>";
+    } else {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(user => {
+        const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+        const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
+
+        let permissoesHtml = "";
+        if (cargo === "CEO") {
+          permissoesHtml = `
+            <h3>Permissões do CEO</h3>
+            <ul>
+              <li>✅ Acesso total</li>
+              <li>✅ Gerenciar cargos</li>
+              <li>✅ Ver todos os perfis</li>
+            </ul>
+          `;
+        } else {
+          permissoesHtml = `
+            <h3>Permissões de Cliente</h3>
+            <ul>
+              <li>🔒 Acesso apenas ao seu perfil</li>
+            </ul>
+          `;
+        }
+
+        document.getElementById("perfil-container").innerHTML = `
+          <img src="${avatar}" width="120"><br>
+          <h2>${user.global_name || user.username}</h2>
+          <p><strong>ID:</strong> ${user.id}</p>
+          <p><strong>Cargo:</strong> ${cargo}</p>
+          ${permissoesHtml}
+        `;
+      })
+      .catch(() => {
+        document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
+      });
+    }
+  </script>
+</body>
+</html>
