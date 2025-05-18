@@ -34,10 +34,11 @@
 
     h1 {
       font-size: 2.5rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
     }
 
     .highlight {
-      color: #007bff;
+      color: #00f0ff;
     }
 
     p {
@@ -47,21 +48,31 @@
 
     .buttons a {
       text-decoration: none;
-      padding: 8px 16px;
-      margin: 8px;
-      border-radius: 5px;
+    }
+
+    .neon-button {
+      position: relative;
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      color: #fff;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: #111;
+      border: 2px solid #00f0ff;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: 0.3s;
+      box-shadow: 0 0 8px #00f0ff80, 0 0 20px #00f0ff40;
       font-weight: bold;
       font-size: 0.95rem;
     }
 
-    .btn-blue {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .btn-dark {
-      background-color: #333;
-      color: white;
+    .neon-button:hover {
+      background: #00f0ff22;
+      box-shadow: 0 0 10px #00f0ffcc, 0 0 25px #00f0ffaa, 0 0 35px #00f0ff88;
+      transform: scale(1.05);
     }
 
     .topbar {
@@ -71,6 +82,7 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      z-index: 3;
     }
 
     .topbar a {
@@ -82,13 +94,26 @@
     }
 
     .login {
-      background-color: #007bff;
-      color: white;
+      background-color: #00f0ff;
+      color: black;
+      box-shadow: 0 0 10px #00f0ffaa;
+      transition: 0.3s;
+    }
+
+    .login:hover {
+      background-color: #00c8dd;
     }
 
     .cart {
       background-color: black;
       color: white;
+      border: 1px solid #00f0ff;
+      box-shadow: 0 0 8px #00f0ff50;
+      transition: 0.3s;
+    }
+
+    .cart:hover {
+      background-color: #111;
     }
 
     .avatar-small {
@@ -111,7 +136,7 @@
       width: 300px;
       z-index: 1001;
       display: none;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
     }
 
     .panel-overlay {
@@ -162,8 +187,8 @@
       <h1>A <span class="highlight">Melhor</span> Loja de<br>Modelagens e resources do MTA</h1>
       <p>A 60Hz Stores é reconhecida como líder do mercado, oferecendo<br>seleção imbatível de produtos digitais com os melhores preços</p>
       <div class="buttons">
-        <a href="#" class="btn-blue">Ver produtos</a>
-        <a href="#" class="btn-dark">Ver avaliações</a>
+        <a href="#" class="neon-button">Ver produtos</a>
+        <a href="#" class="neon-button">Ver avaliações</a>
       </div>
     </div>
   </div>
@@ -179,13 +204,12 @@
   <div id="panel-overlay" class="panel-overlay" onclick="closeProfilePanel()"></div>
 
   <script>
-    // Armazena token se vier na URL
     const urlHash = window.location.hash;
     if (urlHash.includes("access_token")) {
       const params = new URLSearchParams(urlHash.substring(1));
       const token = params.get("access_token");
       sessionStorage.setItem("discord_token", token);
-      localStorage.removeItem("discord_token"); // Remove token antigo, se existir
+      localStorage.removeItem("discord_token");
       window.location.hash = "";
     }
 
@@ -204,14 +228,13 @@
         document.getElementById("user-profile").style.display = "block";
         document.querySelector(".login").style.display = "none";
 
-        // Clicar no avatar mostra o painel
         document.getElementById("user-avatar").addEventListener("click", () => {
           document.getElementById("panel-avatar").src = avatarUrl;
           document.getElementById("panel-display-name").textContent = data.global_name || data.username;
           document.getElementById("panel-username").textContent = "@" + data.username;
 
           const email = data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : `<p><strong>Email:</strong> Não disponível</p>`;
-          const phone = `<p><strong>Telefone:</strong> Não adicionado</p>`; // Fixo porque não vem pela API
+          const phone = `<p><strong>Telefone:</strong> Não adicionado</p>`;
 
           document.getElementById("panel-extra-info").innerHTML = email + phone + `<br><br><a href="perfil.html" style="color: #00f;">Acessar Perfil Privado</a>`;
 
