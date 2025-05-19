@@ -85,29 +85,16 @@
       padding: 15px;
       box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
     }
-
-    .voltar {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      font-size: 24px;
-      color: white;
-      text-decoration: none;
-      background-color: rgba(0,0,0,0.5);
-      padding: 8px 14px;
-      border-radius: 50%;
-      box-shadow: 0 0 10px cyan;
-    }
   </style>
 </head>
 <body>
-  <a href="pagina2.html" class="voltar">X</a>
   <h1>SEU PERFIL</h1>
   <div id="perfil-container"></div>
 
   <script>
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
+    const STAFF_ID = "123456789012345678"; // substitua pelo ID real
     let userId = "", gmailDiscord = "", numeroDiscord = "";
 
     if (!token) {
@@ -120,7 +107,10 @@
       .then(user => {
         const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
         const nome = user.global_name || user.username;
-        const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
+        let cargo = "Cliente";
+        if (user.id === CEO_ID) cargo = "CEO";
+        else if (user.id === STAFF_ID) cargo = "Staff";
+
         gmailDiscord = user.email || "";
         numeroDiscord = user.phone || "";
         userId = user.id;
@@ -131,6 +121,8 @@
 
         const gmailIgual = gmailDiscord && gmailSalvo.toLowerCase() === gmailDiscord.toLowerCase();
         const numeroIgual = numeroDiscord && numeroSalvo === numeroDiscord;
+
+        const linkLogs = `<li>✅ <a href="logs.html" style="color:cyan;">Acesso aos Logs</a></li>`;
 
         document.getElementById("perfil-container").innerHTML = `
           <img src="${avatar}" alt="Avatar do Usuário">
@@ -147,31 +139,34 @@
           <p><strong>Cargo:</strong> ${cargo}</p>
 
           <div class="permissoes">
-          ${cargo === "CEO" ? `
-            <h3>Permissões do CEO</h3>
-            <ul>
-              <li>✅ Acesso total</li>
-              <li>✅ Gerenciar cargos</li>
-              <li>✅ Ver todos os perfis</li>
-            </ul>` : `
-            <h3>Permissões de Cliente</h3>
-            <ul>
-              <li>🔒 Acesso apenas ao seu perfil</li>
-            </ul>`}
+            ${cargo === "CEO" ? `
+              <h3>Permissões do CEO</h3>
+              <ul>
+                <li>✅ Acesso total</li>
+                <li>✅ Gerenciar cargos</li>
+                <li>✅ Ver todos os perfis</li>
+                ${linkLogs}
+              </ul>
+            ` : cargo === "Staff" ? `
+              <h3>Permissões do Staff</h3>
+              <ul>
+                <li>✅ Acesso parcial</li>
+                ${linkLogs}
+              </ul>
+            ` : `
+              <h3>Permissões de Cliente</h3>
+              <ul>
+                <li>🔒 Acesso apenas ao seu perfil</li>
+              </ul>
+            `}
           </div>
         `;
 
-        if (!gmailDiscord) {
-          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", false);
-        } else if (gmailIgual) {
-          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
-        }
+        if (gmailIgual) mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
+        else if (!gmailDiscord) mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
 
-        if (!numeroDiscord) {
-          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", false);
-        } else if (numeroIgual) {
-          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
-        }
+        if (numeroIgual) mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
+        else if (!numeroDiscord) mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
       })
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
@@ -180,48 +175,34 @@
 
     function validarGmail() {
       const emailDigitado = document.getElementById("gmail").value.trim();
-
-      if (!gmailDiscord) {
-        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", false);
-        return;
-      }
+      if (!gmailDiscord) return mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
-        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
+        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
         salvarDado("gmail", emailDigitado);
         document.getElementById("btn-gmail").remove();
       } else {
-        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red", true);
+        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red");
       }
     }
 
     function validarNumero() {
       const numeroDigitado = document.getElementById("numero").value.trim();
-
-      if (!numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", false);
-        return;
-      }
+      if (!numeroDiscord) return mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
 
       if (numeroDigitado === numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
+        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
         salvarDado("numero", numeroDigitado);
         document.getElementById("btn-numero").remove();
       } else {
-        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red", true);
+        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red");
       }
     }
 
-    function mostrarMensagem(id, texto, cor, temporaria = false) {
+    function mostrarMensagem(id, texto, cor) {
       const el = document.getElementById(id);
       el.textContent = texto;
       el.style.color = cor;
-
-      if (temporaria) {
-        setTimeout(() => {
-          el.textContent = "";
-        }, 3000);
-      }
     }
 
     function salvarDado(tipo, valor) {
