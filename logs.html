@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Logs de Login</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Logs de Login</h1>
+  <div id="conteudo-log"></div>
+
+  <script>
+    const token = localStorage.getItem("discord_token");
+    const CEO_ID = "1358576424180518992";
+    const STAFF_ID = "123456789012345678"; // altere com o ID real
+
+    if (!token) {
+      document.body.innerHTML = "<h2>Você não está logado!</h2>";
+    } else {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(user => {
+        const autorizado = user.id === CEO_ID || user.id === STAFF_ID;
+        if (!autorizado) {
+          document.body.innerHTML = "<h2>🚫 Acesso negado. Apenas Staff ou CEO pode ver esta página.</h2>";
+        } else {
+          document.getElementById("conteudo-log").innerHTML = `
+            <p>📝 Aqui estão os logs de login (exemplo):</p>
+            <ul>
+              <li>[12/05/2025] Usuário X fez login</li>
+              <li>[11/05/2025] Usuário Y fez login</li>
+              <li>[10/05/2025] Usuário Z fez login</li>
+            </ul>
+          `;
+        }
+      })
+      .catch(() => {
+        document.body.innerHTML = "<h2>Erro ao verificar permissões.</h2>";
+      });
+    }
+  </script>
+</body>
+</html>
+
