@@ -43,7 +43,7 @@
       top: 20px;
       right: 20px;
       text-align: center;
-      z-index: 2;
+      z-index: 3;
     }
 
     .user-box img {
@@ -66,88 +66,53 @@
       font-weight: bold;
     }
 
-    #menu-toggle {
-      position: fixed;
+    .menu-toggle {
+      position: absolute;
       top: 20px;
       left: 20px;
+      font-size: 30px;
+      cursor: pointer;
       z-index: 4;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: cyan;
     }
 
-    #menu-toggle button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 28px;
-      cursor: pointer;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -250px;
-      width: 250px;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 20px;
-      transition: left 0.3s ease;
-      z-index: 5;
-    }
-
-    .sidebar.open {
-      left: 0;
-    }
-
-    .sidebar h2 {
-      margin-bottom: 20px;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .sidebar ul li {
-      margin: 15px 0;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-
-    .sidebar ul li:hover {
-      text-decoration: underline;
-    }
-
-    .close-btn {
+    .dropdown-menu {
+      display: none;
       position: absolute;
-      top: 15px;
-      right: 15px;
-      font-size: 22px;
-      cursor: pointer;
+      top: 60px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 12px 20px;
+      border-radius: 10px;
+      z-index: 5;
+      box-shadow: 0 0 12px #00f0ff99;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 8px 0;
+      font-weight: bold;
+    }
+
+    .dropdown-menu a:hover {
       color: cyan;
     }
   </style>
 </head>
 <body>
-  <!-- Botão de Menu -->
-  <div id="menu-toggle">
-    <button onclick="abrirMenu()">&#9776;</button>
-  </div>
-
-  <!-- Menu lateral (sidebar) -->
-  <div class="sidebar" id="sidebar">
-    <span class="close-btn" onclick="fecharMenu()">×</span>
-    <h2>Menu</h2>
-    <ul>
-      <li onclick="abrirSuporte()">Abrir Suporte</li>
-      <li onclick="verPerfil()">Ver Perfil</li>
-      <li onclick="sair()">Sair</li>
-    </ul>
-  </div>
-
   <div class="background">
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    <div class="dropdown-menu" id="menu-opcoes"></div>
+
     <div class="content">
       <h1>Bem-vindo!</h1>
     </div>
+
     <div class="user-box" id="user-box" style="display: none;">
       <a href="perfil.html"><img id="user-avatar" alt="Avatar" /></a>
       <p id="user-name"></p>
@@ -155,26 +120,9 @@
   </div>
 
   <script>
-    function abrirMenu() {
-      document.getElementById("sidebar").classList.add("open");
-    }
-
-    function fecharMenu() {
-      document.getElementById("sidebar").classList.remove("open");
-    }
-
-    function abrirSuporte() {
-      alert("Abrir Suporte clicado!");
-    }
-
-    function verPerfil() {
-      window.location.href = "perfil.html";
-    }
-
-    function sair() {
-      localStorage.removeItem("discord_token");
-      alert("Você saiu.");
-      window.location.reload();
+    function toggleMenu() {
+      const menu = document.getElementById("menu-opcoes");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
 
     const urlParams = new URLSearchParams(window.location.hash.substring(1));
@@ -184,6 +132,8 @@
     }
 
     const token = localStorage.getItem("discord_token");
+    const CEO_ID = "1358576424180518992";
+    const STAFF_ID = "123456789012345678"; // substitua pelo ID real do Staff
 
     if (token) {
       fetch("https://discord.com/api/v10/users/@me", {
@@ -199,6 +149,16 @@
         document.getElementById("user-avatar").src = avatarUrl;
         document.getElementById("user-name").textContent = name;
         document.getElementById("user-box").style.display = "block";
+
+        const menu = document.getElementById("menu-opcoes");
+
+        let menuHTML = `<a href="perfil.html">👤 Perfil</a>`;
+
+        if (data.id === CEO_ID || data.id === STAFF_ID) {
+          menuHTML += `<a href="logs.html">📜 Ver Logs de Login</a>`;
+        }
+
+        menu.innerHTML = menuHTML;
       })
       .catch(error => {
         console.error("Erro ao obter usuário:", error);
