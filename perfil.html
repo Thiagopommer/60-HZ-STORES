@@ -65,7 +65,7 @@
     #mensagem-gmail, #mensagem-numero {
       margin-top: 6px;
       font-weight: bold;
-      transition: color 0.3s ease;
+      transition: color 0.3s ease, opacity 0.3s ease;
     }
 
     ul {
@@ -94,7 +94,6 @@
   <script>
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
-    const STAFF_ID = "123456789012345678"; // substitua pelo ID real
     let userId = "", gmailDiscord = "", numeroDiscord = "";
 
     if (!token) {
@@ -107,10 +106,7 @@
       .then(user => {
         const avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
         const nome = user.global_name || user.username;
-        let cargo = "Cliente";
-        if (user.id === CEO_ID) cargo = "CEO";
-        else if (user.id === STAFF_ID) cargo = "Staff";
-
+        const cargo = user.id === CEO_ID ? "CEO" : "Cliente";
         gmailDiscord = user.email || "";
         numeroDiscord = user.phone || "";
         userId = user.id;
@@ -121,8 +117,6 @@
 
         const gmailIgual = gmailDiscord && gmailSalvo.toLowerCase() === gmailDiscord.toLowerCase();
         const numeroIgual = numeroDiscord && numeroSalvo === numeroDiscord;
-
-        const linkLogs = `<li>✅ <a href="logs.html" style="color:cyan;">Acesso aos Logs</a></li>`;
 
         document.getElementById("perfil-container").innerHTML = `
           <img src="${avatar}" alt="Avatar do Usuário">
@@ -139,34 +133,33 @@
           <p><strong>Cargo:</strong> ${cargo}</p>
 
           <div class="permissoes">
-            ${cargo === "CEO" ? `
-              <h3>Permissões do CEO</h3>
-              <ul>
-                <li>✅ Acesso total</li>
-                <li>✅ Gerenciar cargos</li>
-                <li>✅ Ver todos os perfis</li>
-                ${linkLogs}
-              </ul>
-            ` : cargo === "Staff" ? `
-              <h3>Permissões do Staff</h3>
-              <ul>
-                <li>✅ Acesso parcial</li>
-                ${linkLogs}
-              </ul>
-            ` : `
-              <h3>Permissões de Cliente</h3>
-              <ul>
-                <li>🔒 Acesso apenas ao seu perfil</li>
-              </ul>
-            `}
+          ${cargo === "CEO" ? `
+            <h3>Permissões do CEO</h3>
+            <ul>
+              <li>✅ Acesso total</li>
+              <li>✅ Gerenciar cargos</li>
+              <li>✅ Ver todos os perfis</li>
+            </ul>` : `
+            <h3>Permissões de Cliente</h3>
+            <ul>
+              <li>🔒 Acesso apenas ao seu perfil</li>
+            </ul>`}
           </div>
         `;
 
-        if (gmailIgual) mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
-        else if (!gmailDiscord) mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+        if (gmailIgual) {
+          mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
+        } else if (!gmailDiscord) {
+          mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", true);
+        }
 
-        if (numeroIgual) mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
-        else if (!numeroDiscord) mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+        if (numeroIgual) {
+          mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
+          const btn = document.getElementById("btn-numero");
+          if (btn) btn.style.display = "none";
+        } else if (!numeroDiscord) {
+          mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", true);
+        }
       })
       .catch(() => {
         document.body.innerHTML = "<h2>Erro ao carregar perfil.</h2>";
@@ -175,34 +168,48 @@
 
     function validarGmail() {
       const emailDigitado = document.getElementById("gmail").value.trim();
-      if (!gmailDiscord) return mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange");
+
+      if (!gmailDiscord) {
+        mostrarMensagem("mensagem-gmail", "Você precisa adicionar um Gmail no Discord.", "orange", true);
+        return;
+      }
 
       if (emailDigitado.toLowerCase() === gmailDiscord.toLowerCase()) {
-        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen");
+        mostrarMensagem("mensagem-gmail", "GMAIL ADICIONADO", "lightgreen", false);
         salvarDado("gmail", emailDigitado);
         document.getElementById("btn-gmail").remove();
       } else {
-        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red");
+        mostrarMensagem("mensagem-gmail", "GMAIL INVÁLIDO", "red", true);
       }
     }
 
     function validarNumero() {
       const numeroDigitado = document.getElementById("numero").value.trim();
-      if (!numeroDiscord) return mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange");
+
+      if (!numeroDiscord) {
+        mostrarMensagem("mensagem-numero", "Você precisa adicionar um número no Discord.", "orange", true);
+        return;
+      }
 
       if (numeroDigitado === numeroDiscord) {
-        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue");
+        mostrarMensagem("mensagem-numero", "NÚMERO ADICIONADO", "deepskyblue", false);
         salvarDado("numero", numeroDigitado);
         document.getElementById("btn-numero").remove();
       } else {
-        mostrarMensagem("mensagem-numero", "NÚMERO INVÁLIDO", "red");
+        mostrarMensagem("mensagem-numero", "Por favor, coloque o número do Discord.", "red", true);
       }
     }
 
-    function mostrarMensagem(id, texto, cor) {
+    function mostrarMensagem(id, texto, cor, desaparecer) {
       const el = document.getElementById(id);
       el.textContent = texto;
       el.style.color = cor;
+      el.style.opacity = 1;
+      if (desaparecer) {
+        setTimeout(() => {
+          el.style.opacity = 0;
+        }, 3000);
+      }
     }
 
     function salvarDado(tipo, valor) {
