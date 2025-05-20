@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Staff</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      color: cyan;
+      margin-bottom: 20px;
+    }
+
+    .painel {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      display: inline-block;
+    }
+
+    .painel p {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    a.voltar {
+      display: inline-block;
+      margin-top: 25px;
+      text-decoration: none;
+      color: cyan;
+      font-weight: bold;
+      border: 1px solid cyan;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: 0.3s;
+    }
+
+    a.voltar:hover {
+      background-color: cyan;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛠️ PAINEL STAFF</h1>
+  <div class="painel" id="conteudo-staff"></div>
+
+  <script>
+    const token = localStorage.getItem("discord_token");
+    const CEO_ID = "1358576424180518992";
+    const STAFF_ID = "123456789012345678"; // substitua com o ID real
+
+    if (!token) {
+      document.getElementById("conteudo-staff").innerHTML = "<h2>🚫 Você não está logado!</h2>";
+    } else {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(user => {
+        const autorizado = user.id === CEO_ID || user.id === STAFF_ID;
+        if (!autorizado) {
+          document.getElementById("conteudo-staff").innerHTML = "<h2>🚫 Acesso negado. Apenas Staff ou CEO pode acessar este painel.</h2>";
+        } else {
+          document.getElementById("conteudo-staff").innerHTML = `
+            <p>Bem-vindo, <strong>${user.global_name || user.username}</strong>!</p>
+            <p>Este painel é exclusivo para Staff e CEO.</p>
+            <p>🔒 Aqui você pode colocar as funções internas que quiser.</p>
+            <a href="pagina2.html" class="voltar">← Voltar</a>
+          `;
+        }
+      })
+      .catch(() => {
+        document.getElementById("conteudo-staff").innerHTML = "<h2>Erro ao verificar permissões.</h2>";
+      });
+    }
+  </script>
+</body>
+</html>
