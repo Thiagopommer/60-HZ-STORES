@@ -85,16 +85,33 @@
       padding: 15px;
       box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
     }
+
+    .fechar-pagina {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: red;
+      color: white;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
+  <button class="fechar-pagina" onclick="window.location.href='pagina2.html'">X</button>
   <h1>SEU PERFIL</h1>
   <div id="perfil-container"></div>
 
   <script>
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
-    const STAFF_ID = "123456789012345678"; // substitua pelo ID real
+    const STAFF_ID = "123456789012345678";
     let userId = "", gmailDiscord = "", numeroDiscord = "";
 
     if (!token) {
@@ -122,8 +139,6 @@
         const gmailIgual = gmailDiscord && gmailSalvo.toLowerCase() === gmailDiscord.toLowerCase();
         const numeroIgual = numeroDiscord && numeroSalvo === numeroDiscord;
 
-        const linkLogs = `<li>✅ <a href="logs.html" style="color:cyan;">Acesso aos Logs</a></li>`;
-
         document.getElementById("perfil-container").innerHTML = `
           <img src="${avatar}" alt="Avatar do Usuário">
           <h2>${nome}</h2>
@@ -145,13 +160,11 @@
                 <li>✅ Acesso total</li>
                 <li>✅ Gerenciar cargos</li>
                 <li>✅ Ver todos os perfis</li>
-                ${linkLogs}
               </ul>
             ` : cargo === "Staff" ? `
               <h3>Permissões do Staff</h3>
               <ul>
                 <li>✅ Acesso parcial</li>
-                ${linkLogs}
               </ul>
             ` : `
               <h3>Permissões de Cliente</h3>
