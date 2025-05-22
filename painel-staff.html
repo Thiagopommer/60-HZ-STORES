@@ -103,36 +103,39 @@
       font-weight: bold;
     }
 
+    /* Botão X fixo no topo direito da tela */
     .botao-fechar-fixo {
       position: fixed;
       top: 15px;
-      right: 15px;
+      right: 20px;
       background: red;
       color: white;
       border: none;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       cursor: pointer;
       z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
   </style>
 </head>
 <body>
   <h1>🛠️ PAINEL STAFF</h1>
+
+  <!-- Botão X fixo no topo direito -->
   <button class="botao-fechar-fixo" onclick="window.location.href='pagina2.html'">X</button>
+
   <div class="painel" id="conteudo-staff"></div>
 
+  <!-- Painel Flutuante -->
   <div class="overlay" id="cargo-overlay">
     <div class="cargo-panel">
       <div class="close-panel" onclick="fecharPainel()">X</div>
       <h3>ADICIONAR CARGOS</h3>
       <input type="text" id="idUsuario" placeholder="ID do Discord">
+<p id="nomeUsuario"></p>
       <select id="cargoSelecionado">
         <option value="Staff">Staff</option>
         <option value="CEO">CEO</option>
@@ -148,6 +151,7 @@
     const token = localStorage.getItem("discord_token");
     const CEO_ID = "1358576424180518992";
     const STAFF_ID = "123456789012345678";
+
     let usuarioLogado;
 
     if (!token) {
@@ -201,6 +205,7 @@
       const perfil = JSON.parse(localStorage.getItem("perfil_" + id)) || {};
       perfil.cargo = cargo;
       localStorage.setItem("perfil_" + id, JSON.stringify(perfil));
+
       mostrarMensagem("✅ Cargo atribuído com sucesso!", "lightgreen");
     }
 
@@ -215,6 +220,7 @@
       const perfil = JSON.parse(localStorage.getItem("perfil_" + id)) || {};
       delete perfil.cargo;
       localStorage.setItem("perfil_" + id, JSON.stringify(perfil));
+
       mostrarMensagem("❌ Cargo removido com sucesso!", "red");
     }
 
@@ -223,6 +229,24 @@
       el.textContent = msg;
       el.style.color = cor;
     }
-  </script>
+  
+document.getElementById("idUsuario").addEventListener("input", function () {
+  const id = this.value.trim();
+  if (id.length > 15) {
+    fetch("https://discord.com/api/v10/users/" + id, {
+      headers: { Authorization: `Bot SEU_TOKEN_BOT_AQUI` } // Substitua pelo token do seu bot
+    })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => {
+      document.getElementById("nomeUsuario").textContent = `👤 Nome: ${data.global_name || data.username}`;
+    })
+    .catch(() => {
+      document.getElementById("nomeUsuario").textContent = "❌ Usuário não encontrado";
+    });
+  } else {
+    document.getElementById("nomeUsuario").textContent = "";
+  }
+});
+</script>
 </body>
 </html>
