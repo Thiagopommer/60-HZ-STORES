@@ -1,40 +1,252 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="UTF-8"><title>Painel Staff</title></head>
-<body>
-  <h1>Painel Staff</h1>
-  <input type="text" id="idUsuario" placeholder="ID do Discord">
-  <p id="nomeUsuario"></p>
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Staff</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
 
-<script>
+    h1 {
+      color: cyan;
+      margin-bottom: 20px;
+    }
+
+    .painel {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      display: inline-block;
+    }
+
+    .painel p {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: black;
+      color: cyan;
+      border: 2px solid cyan;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: cyan;
+      color: black;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .cargo-panel {
+      background: #222;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px cyan;
+      width: 300px;
+      text-align: left;
+      color: white;
+      position: relative;
+    }
+
+    .cargo-panel h3 {
+      margin-bottom: 15px;
+      color: cyan;
+      text-align: center;
+    }
+
+    .cargo-panel input, .cargo-panel select {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid cyan;
+      background: #111;
+      color: white;
+    }
+
+    .cargo-panel button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .close-panel {
+      position: absolute;
+      top: 10px; right: 12px;
+      cursor: pointer;
+      color: red;
+      font-weight: bold;
+    }
+
+    .mensagem {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    /* Botão X fixo no topo direito da tela */
+    .botao-fechar-fixo {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: red;
+      color: white;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛠️ PAINEL STAFF</h1>
+
+  <!-- Botão X fixo no topo direito -->
+  <button class="botao-fechar-fixo" onclick="window.location.href='pagina2.html'">X</button>
+
+  <div class="painel" id="conteudo-staff"></div>
+
+  <!-- Painel Flutuante -->
+  <div class="overlay" id="cargo-overlay">
+    <div class="cargo-panel">
+      <div class="close-panel" onclick="fecharPainel()">X</div>
+      <h3>ADICIONAR CARGOS</h3>
+      <input type="text" id="idUsuario" placeholder="ID do Discord">
+<p id="nomeUsuario"></p>
+      <select id="cargoSelecionado">
+        <option value="Staff">Staff</option>
+        <option value="CEO">CEO</option>
+        <option value="Cliente">Cliente</option>
+      </select>
+      <button onclick="darCargo()">DAR CARGO</button>
+      <button onclick="removerCargo()">REMOVER CARGO</button>
+      <div class="mensagem" id="mensagemCargo"></div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("discord_token");
+    const CEO_ID = "1358576424180518992";
+    const STAFF_ID = "123456789012345678";
+
+    let usuarioLogado;
+
+    if (!token) {
+      document.getElementById("conteudo-staff").innerHTML = "<h2>🚫 Você não está logado!</h2>";
+    } else {
+      fetch("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(user => {
+        usuarioLogado = user;
+        const autorizado = user.id === CEO_ID || user.id === STAFF_ID;
+
+        if (!autorizado) {
+          document.getElementById("conteudo-staff").innerHTML = "<h2>🚫 Acesso negado. Apenas Staff ou CEO pode acessar este painel.</h2>";
+        } else {
+          document.getElementById("conteudo-staff").innerHTML = `
+            <p>Bem-vindo, <strong>${user.global_name || user.username}</strong>!</p>
+            <p>Painel exclusivo para gerenciamento.</p>
+            <button onclick="abrirPainel()">DAR CARGO</button>
+          `;
+        }
+      })
+      .catch(() => {
+        document.getElementById("conteudo-staff").innerHTML = "<h2>Erro ao verificar permissões.</h2>";
+      });
+    }
+
+    function abrirPainel() {
+      if (usuarioLogado.id !== CEO_ID) {
+        alert("🚫 Apenas o CEO pode abrir o painel de cargos.");
+        return;
+      }
+      document.getElementById("cargo-overlay").style.display = "flex";
+    }
+
+    function fecharPainel() {
+      document.getElementById("cargo-overlay").style.display = "none";
+      document.getElementById("mensagemCargo").textContent = "";
+    }
+
+    function darCargo() {
+      const id = document.getElementById("idUsuario").value.trim();
+      const cargo = document.getElementById("cargoSelecionado").value;
+
+      if (!id) {
+        mostrarMensagem("Preencha o ID do usuário.", "orange");
+        return;
+      }
+
+      const perfil = JSON.parse(localStorage.getItem("perfil_" + id)) || {};
+      perfil.cargo = cargo;
+      localStorage.setItem("perfil_" + id, JSON.stringify(perfil));
+
+      mostrarMensagem("✅ Cargo atribuído com sucesso!", "lightgreen");
+    }
+
+    function removerCargo() {
+      const id = document.getElementById("idUsuario").value.trim();
+
+      if (!id) {
+        mostrarMensagem("Preencha o ID do usuário.", "orange");
+        return;
+      }
+
+      const perfil = JSON.parse(localStorage.getItem("perfil_" + id)) || {};
+      delete perfil.cargo;
+      localStorage.setItem("perfil_" + id, JSON.stringify(perfil));
+
+      mostrarMensagem("❌ Cargo removido com sucesso!", "red");
+    }
+
+    function mostrarMensagem(msg, cor) {
+      const el = document.getElementById("mensagemCargo");
+      el.textContent = msg;
+      el.style.color = cor;
+    }
+  
 document.getElementById("idUsuario").addEventListener("input", function () {
   const id = this.value.trim();
-  const nomeEl = document.getElementById("nomeUsuario");
-
-  if (id.length >= 17) {
+  if (id.length > 15) {
     fetch("https://discord.com/api/v10/users/" + id, {
-      headers: {
-        Authorization: `MTM3MjY4NjQ5MjA1MjIyNjA0OQ.GFQAOx.qm__aDoM19rWBQ-Sj9A_vUSvjE0eeavC0cszYI`  // 👈 troque aqui pelo token do seu bot
-      }
+      headers: { Authorization: `Bot SEU_TOKEN_BOT_AQUI` } // Substitua pelo token do seu bot
     })
-    .then(res => {
-      if (!res.ok) throw new Error("Usuário não encontrado");
-      return res.json();
-    })
+    .then(res => res.ok ? res.json() : Promise.reject())
     .then(data => {
-      const nome = data.global_name || data.username;
-      nomeEl.textContent = `✅ Usuário encontrado: ${nome}`;
-      nomeEl.style.color = "lightgreen";
+      document.getElementById("nomeUsuario").textContent = `👤 Nome: ${data.global_name || data.username}`;
     })
     .catch(() => {
-      nomeEl.textContent = "❌ Usuário não encontrado";
-      nomeEl.style.color = "red";
+      document.getElementById("nomeUsuario").textContent = "❌ Usuário não encontrado";
     });
   } else {
-    nomeEl.textContent = "";
+    document.getElementById("nomeUsuario").textContent = "";
   }
 });
 </script>
-
 </body>
 </html>
